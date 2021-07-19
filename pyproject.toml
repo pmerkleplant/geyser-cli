@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "geyser-cli"
+version = "0.0.1"
+description = "A command line utility for the Ampleforth Geyser"
+readme = "README.md"
+authors = ["pascal-merkleplant <pascal@merkleplant.xyz>"]
+license = "MIT"
+packages = [
+    { include = "geyser" },
+]
+include = ["geyser/assets/*.abi", "geyser/assets/*/*.abi"]
+
+[tool.poetry.scripts]
+geyser = "geyser:main"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+web3 = "^5.21.0"
+click = "^8.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
