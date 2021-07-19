@@ -21,9 +21,10 @@ def main(ctx: click.Context):
     ctx.ensure_object(dict)
 
     # Setup web3 instance
-    provider = os.environ["PROVIDER"]
-    if not provider:
-        raise ValueError("Please set the $PROVIDER environment variable")
+    try:
+        provider = os.environ["PROVIDER"]
+    except KeyError:
+        ctx.exit("Please set the $PROVIDER environment variable")
 
     w3 = Web3(
         Web3.HTTPProvider(provider, request_kwargs={"timeout": 60})
