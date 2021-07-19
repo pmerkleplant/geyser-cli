@@ -1,7 +1,7 @@
 import os
 import click
 from decimal import Decimal
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from web3 import Web3
 from web3.types import (
@@ -46,16 +46,23 @@ def status(ctx: click.Context, addresses: str) -> None:
 
     # Get the status of each Geyser for each address
     geyser: Geyser = ctx.obj["Geyser"]
-    summaries: List[Tuple[ChecksumAddress, List[Status]]] = [
-        (addr, geyser.get_summary(addr)) for addr in addrs
+    summaries: List[Tuple[
+                        Tuple[Optional[str], ChecksumAddress],
+                        List[Status]]
+                    ] = [
+        (addr_tuple, geyser.get_summary(addr_tuple[1])) for addr_tuple in addrs
     ]
 
     # Print the summary for each address
-    for (addr, summary) in summaries:
+    for (addr_tuple, summary) in summaries:
         if not summary:
             continue
 
-        addr_out = click.style(f"{addr}", bold=True)
+        if addr_tuple[0]:  # ENS exists
+            addr_out = click.style(f"{addr_tuple[0]}", bold=True)
+        else:
+            addr_out = click.style(f"{addr_tuple[1]}", bold=True)
+
         click.echo(f"== {addr_out} ==========")
         click.echo()
         [_print_status_of_geyser_instance(status, ctx.obj["PriceOracle"])
@@ -93,12 +100,14 @@ def _print_status_of_geyser_instance(status: Status, price_oracle: PriceOracle):
     click.echo()
 
 
-def _resolve_address_(w3: Web3.HTTPProvider, addr: str) -> ChecksumAddress:
+def _resolve_address_(w3: Web3.HTTPProvider, addr: str) -> Tuple[Optional[str], ChecksumAddress]:
     """
     Returns the checksum address of given ENS domain or address string.
 
     :param w3: Web3 instance
     :param addr: The address string to resolve
+    :return: A tuple consisting of the ENS domain if possible, otherwise None,
+             and the ChecksumAddress
     """
     if addr.endswith(".eth"):
         resolved = w3.ens.address(addr)
@@ -107,10 +116,10 @@ def _resolve_address_(w3: Web3.HTTPProvider, addr: str) -> ChecksumAddress:
                 "Please provide a valid Ethereum address or ENS domain"
             )
         else:
-            return resolved
+            return (addr, resolved)
     else:
         if Web3.isAddress(addr):
-            return Web3.toChecksumAddress(addr)
+            return (None, Web3.toChecksumAddress(addr))
         else:
             raise ValueError(
                 "Please provide a valid Ethereum address or ENS domain"
