@@ -7,6 +7,7 @@ from web3 import Web3
 from web3.types import (
     ChecksumAddress
 )
+from tabulate import tabulate
 
 from .geyser import Geyser
 from .price_oracle import PriceOracle
@@ -51,19 +52,20 @@ def status(ctx: click.Context, addresses: str) -> None:
 
     # Print the summary for each address
     for (addr, summary) in summaries:
-        addr_out = click.style(addr, bold=True)
         if not summary:
-            click.echo(f"No current Geyser found for {addr_out}")
             continue
 
-        click.echo(f"Summary for {addr_out}")
+        addr_out = click.style(f"{addr}", bold=True)
+        click.echo(f"== {addr_out} ==========")
+        click.echo()
         [_print_status_of_geyser_instance(status, ctx.obj["PriceOracle"])
          for status in summary]
 
 
 def _print_status_of_geyser_instance(status: Status, price_oracle: PriceOracle):
-    click.secho("  " + status.geyser_instance, fg="blue")
+    click.secho("" + status.geyser_instance, fg="blue", bold=True)
 
+    table = []
     total_value = Decimal(0)
 
     for (ticker, balance) in status.balances:
@@ -71,16 +73,23 @@ def _print_status_of_geyser_instance(status: Status, price_oracle: PriceOracle):
 
         # NOTE: The balances returned from a Balancer pool need to be
         # converted again to ether.
-        if (status.geyser_instance in ["Old Faithful", "Trinity"]):
+        if status.geyser_instance in ["Old Faithful", "Trinity"]:
             adjusted_balance = Web3.fromWei(adjusted_balance, "ether")
 
         # Get $-value of current balance
         value = price_oracle.prices[ticker.lower()] * adjusted_balance
         total_value += value
 
-        click.echo("    " + f"{ticker}: {adjusted_balance: .5f}    $ {value}")
+        table.append(
+            [ticker, f"{adjusted_balance: .5f}", value]
+        )
 
-    click.echo("    " + f"$$$$: {total_value: .2f}")
+    table.append([
+        click.style("$$$", bold=True),
+        "",
+        click.style(f"{total_value: .2f}", bold=True)
+    ])
+    click.echo(tabulate(table, headers=["Token", "Balance", "Value in $"]))
     click.echo()
 
 

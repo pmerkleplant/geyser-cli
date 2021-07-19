@@ -203,7 +203,7 @@ class Geyser:
         # TODO: Get interest earned
         interest = Decimal(0)
 
-        return Status("Pescedaro", interest, [("AMPL", balance_user_ampl),
+        return Status("Pescadero", interest, [("AMPL", balance_user_ampl),
                                               ("WETH", balance_user_weth)])
 
     def __get_status_beehive(self, address: ChecksumAddress) -> Optional[Status]:
