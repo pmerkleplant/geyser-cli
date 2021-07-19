@@ -40,7 +40,6 @@ def main(ctx: click.Context):
 @click.pass_context
 def status(ctx: click.Context, addresses: str) -> None:
     # Resolve addresses
-    # TODO: Save ENS name for better output
     addrs = [_resolve_address_(ctx.obj["w3"], addr)
              for addr in addresses]
 
