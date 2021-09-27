@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "geyser-cli"
-version = "0.0.2"
-description = "A command line utility for the Ampleforth Geyser"
+version = "0.1.0"
+description = "A command line utility for the Ampleforth Geyser v2"
 readme = "README.md"
 authors = ["pascal-merkleplant <pascal@merkleplant.xyz>"]
 license = "MIT"
